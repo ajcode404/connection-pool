@@ -12,9 +12,6 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     implementation("org.postgresql:postgresql:42.7.4")
-//    implementation("org.jdbi:jdbi3-kotlin:3.12.2")
-//    implementation("org.jdbi:jdbi3-postgres:3.12.2")
-
 }
 
 tasks.test {
@@ -22,4 +19,10 @@ tasks.test {
 }
 kotlin {
     jvmToolchain(21)
+}
+
+tasks.register<JavaExec>("run") {
+    group = "application"
+    mainClass.set("com.github.ajcode404.MainKt")
+    classpath = sourceSets["main"].runtimeClasspath
 }
