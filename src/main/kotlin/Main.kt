@@ -4,10 +4,15 @@ import kotlin.system.measureTimeMillis
 
 fun main() {
 
-    // will break at some point due to number conn open.
-    println("with conn pool: ${withConnectionPool(1000)}")
     // will not break since we are using a pool here
-    println("without conn pool: ${withoutConnectionPooling(1000)}")
+    println("with conn pool: ${withConnectionPool(1000)}")
+
+    // will break at some point due to number conn open.
+    try {
+        println("without conn pool: ${withoutConnectionPooling(1000)}")
+    } catch (e: Throwable) {
+        e.printStackTrace()
+    }
 }
 
 fun withoutConnectionPooling(iteration: Int) = measureTimeMillis {
