@@ -7,16 +7,16 @@ import java.util.concurrent.LinkedBlockingQueue
 import kotlin.system.measureTimeMillis
 
 object DBConfig {
-    const val JDBC_URL = "jdbc:h2:mem:testdb"
-    const val USER = "sa"
+    const val JDBC_URL = "jdbc:postgresql://localhost:5433/"
+    const val USER = "postgres"
     const val PASSWORD = ""
 }
 
 private const val CAPACITY = 10
 
 fun main() {
-    println("with conn pool: ${withConnectionPool(100000)}")
-    println("without conn pool: ${withoutConnectionPooling(100000)}")
+    println("with conn pool: ${withConnectionPool(1000)}")
+//    println("without conn pool: ${withoutConnectionPooling(1000)}")
 }
 
 class ConnectionPool {
@@ -34,6 +34,7 @@ class ConnectionPool {
         return connectionPool.take()
     }
 
+    // note we are not closing the connection we are giving it back to pool
     fun releaseConnection(conn: Connection) {
         connectionPool.offer(conn)
     }
@@ -41,9 +42,10 @@ class ConnectionPool {
 
 fun withoutConnectionPooling(iteration: Int) = measureTimeMillis {
     repeat(iteration) {
+        println("conn: $it")
         val connection: Connection = DriverManager.getConnection(DBConfig.JDBC_URL, DBConfig.USER, DBConfig.PASSWORD)
         executeQuery(connection)
-        connection.close()
+        // connection.close()
     }
 }
 
@@ -56,7 +58,6 @@ fun withConnectionPool(iteration: Int) = measureTimeMillis {
         connPool.releaseConnection(conn)
     }
 }
-
 
 fun executeQuery(conn: Connection) {
     val statement = conn.createStatement()
