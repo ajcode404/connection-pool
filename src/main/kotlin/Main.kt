@@ -6,16 +6,18 @@ import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 import kotlin.system.measureTimeMillis
 
-const val JDBC_URL = "jdbc:h2:mem:testdb"
-const val USER = "sa"
-const val PASSWORD = ""
+object DBConfig {
+    const val JDBC_URL = "jdbc:h2:mem:testdb"
+    const val USER = "sa"
+    const val PASSWORD = ""
+}
+
+private const val CAPACITY = 10
 
 fun main() {
     println("with conn pool: ${withConnectionPool(100000)}")
     println("without conn pool: ${withoutConnectionPooling(100000)}")
 }
-
-private const val CAPACITY = 10
 
 class ConnectionPool {
 
@@ -23,7 +25,8 @@ class ConnectionPool {
 
     init {
         repeat(CAPACITY) {
-            connectionPool.put(conn())
+            val conn = DriverManager.getConnection(DBConfig.JDBC_URL, DBConfig.USER, DBConfig.PASSWORD)
+            connectionPool.put(conn)
         }
     }
 
@@ -38,7 +41,7 @@ class ConnectionPool {
 
 fun withoutConnectionPooling(iteration: Int) = measureTimeMillis {
     repeat(iteration) {
-        val connection: Connection = conn()
+        val connection: Connection = DriverManager.getConnection(DBConfig.JDBC_URL, DBConfig.USER, DBConfig.PASSWORD)
         executeQuery(connection)
         connection.close()
     }
@@ -46,6 +49,7 @@ fun withoutConnectionPooling(iteration: Int) = measureTimeMillis {
 
 fun withConnectionPool(iteration: Int) = measureTimeMillis {
     val connPool = ConnectionPool()
+
     repeat(iteration) {
         val conn = connPool.getConnection()
         conn.createStatement().execute("SELECT 1")
@@ -53,7 +57,6 @@ fun withConnectionPool(iteration: Int) = measureTimeMillis {
     }
 }
 
-fun conn(): Connection = DriverManager.getConnection(JDBC_URL, USER, PASSWORD)
 
 fun executeQuery(conn: Connection) {
     val statement = conn.createStatement()
